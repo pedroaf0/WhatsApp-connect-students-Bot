@@ -13,15 +13,10 @@ exports.ResponseDb  = {
   },
   "pre_registro": {
     "nome": async function nome(numero){
-  const callback =  (body, numero)=>{
-         db('numeros').where({'numero': numero }).update({
-          'nome':body
-        });
-        return  { 'condicao':'pre_registro', 'contexto':'condicao' };
-      }
+  const callback = {'condicao_cb':'pre_registro','contexto_cb':'nome'};
         await db('numeros').insert({
           'condicao':'none',
-          'callback':callback.toString(),
+          'callback':JSON.stringify(callback),
           'numero':numero,
           'nome':'none'
         });
@@ -29,16 +24,9 @@ exports.ResponseDb  = {
       return 'Olá estranho, qual é o seu nome?';
     },
     "condicao": async function nome(numero){
-      const callback =  (body, numero)=>{
-             db('numeros').where({'numero': numero }).update({
-              'condicao':body,
-              
-            });
-            return  { 'condicao':body, 'contexto':'padrão' };
-          }
+      const callback = {'condicao_cb':'pre_registro','contexto_cb':'condicao'};
             await   db('numeros').where({'numero': numero }).update({
-              'callback':callback.toString(),
-              
+              'callback':JSON.stringify(callback)
             });
     
           return 'Você é estudadante ou professo?';

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./database/db');
 const { ResponseDb } = require('./ResponseDb');
+const { callbackDB } = require('./CallbackDB');
 
 
 const { google } = require('googleapis');
@@ -26,29 +27,24 @@ app.use(express.json());
 app.use(async (req, res, next) => {
 
   const { Body, To, From} = req.body;
-
   console.log({ Body, To, From});
-
-  const  funcao  = await db('numeros').where('numero', From.split(":")[1]).select('callback');
-  function get() {
+ async function get(){
     try {
-      console.log(funcao[0].callback)
-      const callback = eval(funcao[0].callback)(Body, From);
-      console.log(callback)
-      const { condicao, contexto } =  callback;
+      const  callback  = await db('numeros').where('numero', From.split(":")[1]).select('callback');
+      console.log(JSON.parse(callback[0].callback));
+      const  { condicao_cb, contexto_cb }  = JSON.parse(callback[0].callback);
+      const  { condicao, contexto } = await callbackDB[condicao_cb][contexto_cb](From.split(":")[1],Body)
       return { condicao, contexto };
     } catch (error) {
       console.log(error)
-      const condicao = 'pre_registro';
-      const contexto = 'nome';
-      return { condicao, contexto };
+      return {'condicao':'pre_registro','contexto':'nome'};
     }
 
 }
-const { condicao, contexto } = get()
+const { condicao, contexto } = await get();
 console.log({ condicao, contexto });
 try {
-  const response =await ResponseDb[condicao][contexto](From.split(":")[1]);
+  const response = await ResponseDb[condicao][contexto](From.split(":")[1], Body);
 console.log(response);
   client.messages 
   .create({ 
@@ -73,16 +69,16 @@ console.log(response);
  
 
 
-  const options = {
-    q: req.body.Body,
-    auth: APIKEY,
-    cx: CX
-  };
-  const customsearch = google.customsearch('v1');
-  const result = await customsearch.cse.list(options);
-  const firstResult = result.data.items[0];
-  const searchData = firstResult.snippet;
-  const link = firstResult.link;
+  // const options = {
+  //   q: req.body.Body,
+  //   auth: APIKEY,
+  //   cx: CX
+  // };
+  // const customsearch = google.customsearch('v1');
+  // const result = await customsearch.cse.list(options);
+  // const firstResult = result.data.items[0];
+  // const searchData = firstResult.snippet;
+  // const link = firstResult.link;
 
 
 
